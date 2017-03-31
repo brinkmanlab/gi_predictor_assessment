@@ -1,22 +1,10 @@
 # Author: Claire Bertelli (claire.bertelli@gmail.com)
 # Last maintained 01.04.2017
-# Formatting of results from GI prediction software into a 
+# Functions to parse the output from GI prediction software into a three column 
+# format (name start stop) without header. Need to have one file per genome for
+# the functions to assess prediction accuracy.
 ###################
-# Requires the sup tables 2 and 4 of Morgan Langille's BMC bioinformatics paper, 
-# formatted to one file per genome in a three column format (name start stop)
-#     
 
-# load useful libraries
-#source("http://bioconductor.org/biocLite.R")
-#biocLite("GenomicRanges")
-library(GenomicRanges)
-
-# Functions to parse the output from the various software - on file per genome -
-# and format it to a three column based format - no header
-##########
-parse_GCProfile <- function() {
-  
-}
 
 parse_MSGIP <- function(inputfile, outputfile) {
   lines <- readLines(inputfile)
@@ -93,19 +81,20 @@ parse_PredictBias <- function(inputfile, outputfile) {
 
 }
 
+parse_GCProfile <- function() {
+  
+}
+
 
 #########
 # little function to go from a two column of GI pred (start stop) to a three 
 # column format (name start stop)
-two2threeCol <- function(folder) {
-  dir <- dir(folder, pattern=".txt", full.names = T)
-  for (file in dir) { 
-    tab <- try(read.table(file, header=F, sep="\t", as.is=T))
-    if(inherits(tab, "try-error")) {
-      tab<-''
-    }else{
-      write.table(cbind(paste0("GI_", seq(1:nrow(tab))), tab), gsub(".txt","_gis.txt",file), row.names=F, col.names=F, sep="\t", quote=F)
-    }
+# outputfile is <prefix>_gis.txt
+two2threeCol <- function(inputfile, outputfile) {
+  tab <- try(read.table(inputfile, header=F, sep="\t", as.is=T))
+  if(inherits(tab, "try-error")) {
+    tab<-''
+  }else{
+    write.table(cbind(paste0("GI_", seq(1:nrow(tab))), tab), outputfile, row.names=F, col.names=F, sep="\t", quote=F)
   }
 }
-two2threeCol("ipath_dimob_v0.3")
