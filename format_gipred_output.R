@@ -88,7 +88,7 @@ parse_mjsd <- function(inputfile,outputfile) {
   if(!is.null(lines)) {
     cutoff <- 0.99999
     # removes all segments that are not considered genomic islands
-    lines %>% dplyr::filter(V2 >= cutoff) -> lines
+    subset(lines, lines$V2 >= cutoff) -> lines
     lines$V2 <- NULL
     lines$istart <- as.numeric(gsub("-[0-9]*:","",lines$V1))
     lines$iend <- as.numeric(gsub(".*-(.*):", "\\1",lines$V1))
@@ -97,7 +97,7 @@ parse_mjsd <- function(inputfile,outputfile) {
     i <- 1
     while(i < (nrow(lines)-1)) {
       while(lines[i,2] == lines[i+1,1]) {
-        lines[i,2] <- lines[i+1,1]
+        lines[i,2] <- lines[i+1,2]
         lines <- lines[-(i+1),]
       }
       i <- i+1
