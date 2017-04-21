@@ -96,8 +96,8 @@ parse_mjsd <- function(inputfile,outputfile) {
       lines$V1 <- NULL
       # the following while loop merges consecutive islands
       i <- 1
-      while(i < (nrow(lines)-1)) {
-        while(lines[i,2] == lines[i+1,1]) {
+      while(i < (nrow(lines))) {
+        while(i < nrow(lines) && lines[i,2] == lines[i+1,1]) {
           lines[i,2] <- lines[i+1,2]
           lines <- lines[-(i+1),]
         }
