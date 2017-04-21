@@ -82,29 +82,32 @@ parse_mjsd <- function(inputfile,outputfile) {
       read.table(inputfile, sep=" ", colClasses = c("character","numeric"))[1:2]
     },
     error=function(e) {
-      writeLines("", outputfile)
+      cat("",file=outputfile,append=TRUE)
     }
   )
   if(!is.null(lines)) {
     cutoff <- 0.99999
     # removes all segments that are not considered genomic islands
     subset(lines, lines$V2 >= cutoff) -> lines
-    lines$V2 <- NULL
-    lines$istart <- as.numeric(gsub("-[0-9]*:","",lines$V1))
-    lines$iend <- as.numeric(gsub(".*-(.*):", "\\1",lines$V1))
-    lines$V1 <- NULL
-    # the following while loop merges consecutive segments
-    i <- 1
-    while(i < (nrow(lines)-1)) {
-      while(lines[i,2] == lines[i+1,1]) {
-        lines[i,2] <- lines[i+1,2]
-        lines <- lines[-(i+1),]
+    if(nrow(lines)){
+      lines$V2 <- NULL
+      lines$istart <- as.numeric(gsub("-[0-9]*:","",lines$V1))
+      lines$iend <- as.numeric(gsub(".*-(.*):", "\\1",lines$V1))
+      lines$V1 <- NULL
+      # the following while loop merges consecutive islands
+      i <- 1
+      while(i < (nrow(lines)-1)) {
+        while(lines[i,2] == lines[i+1,1]) {
+          lines[i,2] <- lines[i+1,2]
+          lines <- lines[-(i+1),]
+        }
+        i <- i+1
       }
-      i <- i+1
+      name <- paste0("MJSD_", seq(1, nrow(lines)))
+      write.table(cbind(name,lines), file=outputfile, sep="\t", row.names=F, col.names=F)
     }
-    name <- paste0("MJSD_", seq(1, nrow(lines)))
-    write.table(cbind(name,lines), file=outputfile, sep="\t", row.names=F, col.names=F)
   }
+  cat("",file=outputfile,append=TRUE)
 }
 
 # NEEDS TO BE IMPLEMENTED
