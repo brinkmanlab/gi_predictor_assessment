@@ -112,7 +112,7 @@ parse_mjsd <- function(inputfile,outputfile) {
 
 parse_alien_hunter <- function(inputfile,outputfile) {
   lines <- readLines(inputfile)
-  g <- grep("\\d+\\.\\.\\d+", lines, value=TRUE)
+  g <- grep("misc_feature", lines, value=TRUE)
   if (length(g>=1)) {
     gis <- paste0("ALIENHUNTER_", seq(1, length(g)))
     indices <- gsub("FT   misc_feature    (\\d+)\\.\\.(\\d+)","\\1\t\\2", g)
