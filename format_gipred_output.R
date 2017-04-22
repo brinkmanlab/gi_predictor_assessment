@@ -110,6 +110,18 @@ parse_mjsd <- function(inputfile,outputfile) {
   cat("",file=outputfile,append=TRUE)
 }
 
+parse_alien_hunter <- function(inputfile,outputfile) {
+  lines <- readLines(inputfile)
+  g <- grep("\\d+\\.\\.\\d+", lines, value=TRUE)
+  if (length(g>=1)) {
+    gis <- paste0("ALIENHUNTER_", seq(1, length(g)))
+    indices <- gsub("FT   misc_feature    (\\d+)\\.\\.(\\d+)","\\1\t\\2", g)
+    write.table(cbind(gis, indices), outputfile, row.names=F, col.names=F, sep="\t", quote=F)
+  } else {
+    writeLines("", outputfile)
+  }
+}
+
 # NEEDS TO BE IMPLEMENTED
 parse_PredictBias <- function(inputfile, outputfile) {
 
