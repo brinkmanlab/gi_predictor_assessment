@@ -122,65 +122,33 @@ parse_alien_hunter <- function(inputfile,outputfile) {
   }
 }
 
-parse_centroid <- function(inputfile,outputfile) {
-  lines <- readLines(inputfile)
-  g <- grep("(\\d+)-(\\d+)", lines)
-  if(length(g)) {
-    islands <- list()
-    for(match in g) {
-      start <- as.numeric(gsub(">(\\d+)-.*", "\\1", lines[match]))
-      end <- as.numeric(gsub(".*-(\\d+).*", "\\1", lines[match]))
-      if(length(islands)) {
-        overlap <- 0
-        for(i in 1:length(islands)) {
-          if(start <= islands[[i]][2] && end >= islands[[i]][1]) {
-            # overlap!
-            overlap <- 1
-            if(start < islands[[i]][1]) {
-              islands[[i]][1] <- start
-            }
-            if(end > islands[[i]][2]) {
-              islands[[i]][2] <- end
-            }
-          }
-        }
-        if(!overlap) {
-          islands[[length(islands)+1]] <- c(start, end)
-        }
-      }else{
-        islands[[1]] <- c(start, end)
-      }
-    }
-    for(i in 1:length(islands)) {
-      write(paste0("centroid_",i,"\t",islands[[i]][1],"\t",islands[[i]][2]), outputfile, append = TRUE)
-    }
-  }else{
-    writeLines("", outputfile)
-  }
-}
-
-parse_centroid_2 <- function(inputfile, outputfile) {
+parse_centroid <- function(inputfile, outputfile) {
   lines <- readLines(inputfile)
   g <- grep("(\\d+)-(\\d+)", lines)
   if(length(g)) {
     start <- as.numeric(gsub(">(\\d+)-.*", "\\1", lines[g]))
     end <- as.numeric(gsub(".*-(\\d+).*", "\\1", lines[g]))
     indices <- cbind(start, end)
-    for(i in 1:nrow(indices)) {
-      for(j in i+1:nrow(indices)) {
-        if(indices[i,1] <= indices[j,2] && indices[i,2] >= indices[j,1]) {
+    i <- 1
+    while(i < (nrow(indices))) {
+      j <- i+1
+      while(j <= nrow(indices)) {
+        if((indices[i,1] <= indices[j,2]) && (indices[i,2] >= indices[j,1])) {
           if(indices[j,1] < indices[i,1]) {
             indices[i,1] <- indices[j,1]
-            indices <- indices[-j]
           }
           if(indices[j,2] > indices[i,2]) {
             indices[i,2] <- indices[j,2]
-            indices <- indices[-j]
           }
+          indices <- indices[-j,]
         }
+        j <- j+1
       }
+      i <- i+1
     }
-    print(indices)
+    gis <- paste0("CENTROID_", seq(1, nrow(indices)))
+    indices <- as.data.frame(indices)
+    write.table(cbind(gis, indices[order(indices$start), ]), outputfile, row.names=F, col.names=F, sep="\t", quote=F)
   }else{
     writeLines("", outputfile)
   }
