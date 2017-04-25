@@ -124,16 +124,19 @@ parse_alien_hunter <- function(inputfile,outputfile) {
 
 parse_centroid <- function(inputfile, outputfile) {
   lines <- readLines(inputfile)
-  g <- grep("(\\d+)-(\\d+)", lines)
+  g <- grep(">(\\d+)-(\\d+).*", lines)
   if(length(g)) {
-    start <- as.numeric(gsub(">(\\d+)-.*", "\\1", lines[g]))
-    end <- as.numeric(gsub(".*-(\\d+).*", "\\1", lines[g]))
+    start <- as.numeric(gsub(">(\\d+)-\\d+.*", "\\1", lines[g]))
+    end <- as.numeric(gsub(">\\d+-(\\d+).*", "\\1", lines[g]))
     indices <- cbind(start, end)
     i <- 1
     while(i < (nrow(indices))) {
       j <- i+1
       while(j <= nrow(indices)) {
+        # print(paste("rows:",nrow(indices),"i",i,"j",j))
+        # print(indices[j,])
         if((indices[i,1] <= indices[j,2]) && (indices[i,2] >= indices[j,1])) {
+          # The ith and jth entries in indices overlap
           if(indices[j,1] < indices[i,1]) {
             indices[i,1] <- indices[j,1]
           }
