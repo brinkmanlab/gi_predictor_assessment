@@ -134,8 +134,6 @@ parse_centroid <- function(inputfile, outputfile) {
     while(i < (nrow(indices))) {
       j <- i+1
       while(j <= nrow(indices)) {
-        # print(paste("rows:",nrow(indices),"i",i,"j",j))
-        # print(indices[j,])
         if((indices[i,1] <= indices[j,2]) && (indices[i,2] >= indices[j,1])) {
           # The ith and jth entries in indices overlap
           if(indices[j,1] < indices[i,1]) {
