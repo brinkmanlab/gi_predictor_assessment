@@ -165,15 +165,13 @@ parse_pai_ida <- function(inputfile, outputfile) {
     steps <- cbind(steps,(steps+5000))
     i <- 1
     while(i < nrow(steps)) {
-      # print(paste("i:",i))
-      # print(paste(steps[i,2],steps[i+1,1]))
       while((i < nrow(steps)) && (steps[i,2] == steps[i+1,1])) {
         steps[i,2] <- steps[i+1,2]
         steps <- steps[-(i+1),]
       }
       i <- i+1
     }
-    gis <- paste0("PAI_IDA_", seq(1, nrow(steps)))
+    gis <- paste0("PAI-IDA_", seq(1, nrow(steps)))
     write.table(cbind(gis, steps), outputfile, row.names=F, col.names=F, sep="\t", quote=F)
   }else{
     writeLines("", outputfile)
@@ -201,5 +199,3 @@ two2threeCol <- function(inputfile, outputfile) {
     write.table(cbind(paste0("GI_", seq(1:nrow(tab))), tab), outputfile, row.names=F, col.names=F, sep="\t", quote=F)
   }
 }
-
-parse_pai_ida("15041.sdat","out")
