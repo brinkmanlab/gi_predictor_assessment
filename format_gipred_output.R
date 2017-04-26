@@ -114,7 +114,7 @@ parse_alien_hunter <- function(inputfile,outputfile) {
   lines <- readLines(inputfile)
   g <- grep("misc_feature", lines, value=TRUE)
   if (length(g>=1)) {
-    gis <- paste0("ALIENHUNTER_", seq(1, length(g)))
+    gis <- paste0("alien_hunter_", seq(1, length(g)))
     indices <- gsub("FT   misc_feature    (\\d+)\\.\\.(\\d+)","\\1\t\\2", g)
     write.table(cbind(gis, indices), outputfile, row.names=F, col.names=F, sep="\t", quote=F)
   } else {
@@ -149,7 +149,7 @@ parse_centroid <- function(inputfile, outputfile) {
       }
       i <- i+1
     }
-    gis <- paste0("CENTROID_", seq(1, nrow(indices)))
+    gis <- paste0("Centroid_", seq(1, nrow(indices)))
     indices <- as.data.frame(indices)
     write.table(cbind(gis, indices[order(indices$start), ]), outputfile, row.names=F, col.names=F, sep="\t", quote=F)
   }else{
