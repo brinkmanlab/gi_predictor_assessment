@@ -129,29 +129,22 @@ parse_centroid <- function(inputfile, outputfile) {
   if(length(g)) {
     start <- as.numeric(gsub(">(\\d+)-\\d+.*", "\\1", lines[g]))
     end <- as.numeric(gsub(">\\d+-(\\d+).*", "\\1", lines[g]))
-    indices <- cbind(start, end)
+    indices <- as.data.frame(cbind(start, end))[order(start),]
     i <- 1
     while(i < (nrow(indices))) {
-      j <- i+1
-      while(j <= nrow(indices)) {
-        if((indices[i,1] <= indices[j,2]) && (indices[i,2] >= indices[j,1])) {
-          # The ith and jth entries in indices overlap
-          if(indices[j,1] < indices[i,1]) {
-            indices[i,1] <- indices[j,1]
-          }
-          if(indices[j,2] > indices[i,2]) {
-            indices[i,2] <- indices[j,2]
-          }
-          indices <- indices[-j,]
+      if(indices[i,2] >= (indices[(i+1),1]-1)) {
+        # The ith entry in indices overlaps with the next entry
+        if(indices[(i+1),2] > indices[i,2]) {
+          indices[i,2] <- indices[(i+1),2] 
         }
-        j <- j+1
+        indices <- indices[-(i+1),,drop=FALSE] # drop=FALSE is necessary for nrow() to function when indices becomes 1 row
+      }else{
+        i <- i+1
       }
-      i <- i+1
     }
     gis <- paste0("Centroid_", seq(1, nrow(indices)))
-    indices <- as.data.frame(indices)
     options(scipen=999)
-    write.table(cbind(gis, indices[order(indices$start), ]), outputfile, row.names=F, col.names=F, sep="\t", quote=F)
+    write.table(cbind(gis, indices), outputfile, row.names=F, col.names=F, sep="\t", quote=F)
   }else{
     writeLines("", outputfile)
   }
@@ -167,7 +160,7 @@ parse_pai_ida <- function(inputfile, outputfile) {
     while(i < nrow(steps)) {
       if(steps[i,2] == steps[(i+1),1]) {
         steps[i,2] <- steps[(i+1),2]
-        steps <- steps[-(i+1),,drop=FALSE] # drop=FALSE is necessary for nrow() to function with 1 row
+        steps <- steps[-(i+1),,drop=FALSE] # drop=FALSE is necessary for nrow() to function when steps becomes 1 row
       }else{
         i <- i+1
       }
