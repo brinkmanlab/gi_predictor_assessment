@@ -104,6 +104,7 @@ parse_mjsd <- function(inputfile,outputfile) {
         i <- i+1
       }
       name <- paste0("MJSD_", seq(1, nrow(lines)))
+      options(scipen=999)
       write.table(cbind(name,lines), file=outputfile, sep="\t", row.names=F, col.names=F)
     }
   }
@@ -151,6 +152,7 @@ parse_centroid <- function(inputfile, outputfile) {
     }
     gis <- paste0("Centroid_", seq(1, nrow(indices)))
     indices <- as.data.frame(indices)
+    options(scipen=999)
     write.table(cbind(gis, indices[order(indices$start), ]), outputfile, row.names=F, col.names=F, sep="\t", quote=F)
   }else{
     writeLines("", outputfile)
