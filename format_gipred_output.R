@@ -173,6 +173,42 @@ parse_pai_ida <- function(inputfile, outputfile) {
   }
 }
 
+parse_SigHunt <- function(inputfile, outputfile, cutoff=5) {
+  DIAS=read.table(inputfile,header=TRUE)
+  DIAS$pass <- (DIAS$Hurricane >= cutoff)
+  DIAS$gi <- 0
+  # following for loop adapted from code in SigHuntTransform.r (https://www.iba.muni.cz/index-en.php?pg=research--data-analysis-tools--sighunt)
+  # for each window that passes the cutoff, the adjacent two windows on either side are also considered part of the genomic island
+  for (i in -2:2){
+    move=(which(DIAS$pass==TRUE)+i)
+    move=move[move>0 & move<=nrow(DIAS)]
+    if(length(move)) {
+      DIAS[move,]$gi <- 1
+    }
+  }
+  DIAS <- subset(DIAS, DIAS$gi==1)
+  if(nrow(DIAS)>0) {
+    start <- as.numeric(gsub(">Region_\\d+_(\\d+)_(\\d+)", "\\1", row.names(DIAS)))
+    end <- as.numeric(gsub(">Region_\\d+_(\\d+)_(\\d+)", "\\2", row.names(DIAS)))
+    indices <- as.data.frame(cbind(start, end))
+    i <- 1
+    while(i < (nrow(indices))) {
+      if(indices[i,2] >= (indices[(i+1),1])) {
+        # The ith entry in indices overlaps with the next entry
+        indices[i,2] <- indices[(i+1),2]
+        indices <- indices[-(i+1),,drop=FALSE] # drop=FALSE is necessary for nrow() to function when indices becomes 1 row
+      }else{
+        i <- i+1
+      }
+    }
+    gis <- paste0("SigHunt_", seq(1, nrow(indices)))
+    options(scipen=999)
+    write.table(cbind(gis, indices), outputfile, row.names=F, col.names=F, sep="\t", quote=F)
+  }else{
+    writeLines("",outputfile)
+  }
+}
+
 # NEEDS TO BE IMPLEMENTED
 parse_PredictBias <- function(inputfile, outputfile) {
 
