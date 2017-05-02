@@ -209,13 +209,37 @@ parse_SigHunt <- function(inputfile, outputfile, cutoff=5) {
   }
 }
 
+parse_GCProfile <- function(inputfile, outputfile) {
+  GC <- read.table(inputfile)
+  GC <- data.frame(start = GC[seq(1,nrow(GC),2),1], end = GC[seq(2,nrow(GC),2),1], content = GC[seq(2,nrow(GC),2),2])
+  GC$length <- GC$end - GC$start + 1
+  # Genomic Islands are beyond weighted mean +/- 2 * weighted SD
+  wtmean <- weighted.mean(GC$content, GC$length)
+  wtsd <- sqrt(sum(GC$length * (GC$content - wtmean)^2)/sum(GC$length))
+  cutoff <- wtsd * 2
+  GC$GI <- as.factor(ifelse(abs(GC$content - wtmean) >= cutoff, 1, 0))
+  GC <- subset(GC, GC$GI == 1)[,c(1,2)]
+  if(nrow(GC)>0) {
+    i <- 1
+    while(i < (nrow(GC))) {
+      if(GC[i,]$end == (GC[(i+1),]$start - 1)) {
+        # The ith entry in GC is next to the next entry
+        GC[i,]$end <- GC[(i+1),]$end
+        GC <- GC[-(i+1),,drop=FALSE] # drop=FALSE is necessary for nrow() to function when indices becomes 1 row
+      }else{
+        i <- i+1
+      }
+    }
+    gis <- paste0("GC-Profile_", seq(1, nrow(GC)))
+    write.table(cbind(gis,GC), outputfile, row.names=F, col.names=F, sep="\t", quote=F)
+  } else {
+    writeLines("",outputfile)
+  }
+}
+
 # NEEDS TO BE IMPLEMENTED
 parse_PredictBias <- function(inputfile, outputfile) {
 
-}
-
-parse_GCProfile <- function() {
-  
 }
 
 #########
