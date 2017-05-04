@@ -237,48 +237,6 @@ parse_GCProfile <- function(inputfile, outputfile) {
   }
 }
 
-# Requires genbankr library from bioconductor
-parse_PredictBias <- function(inputfile, genbankfile, outputfile) {
-  genbank <- readGenBank(genbankfile)
-  # Could not find method to access start and end positions from GenBankRecord object - coercing to data frame
-  gene_positions <- as.data.frame(genes(genbank))[,c("old_locus_tag","start","end")]
-  gene_positions <- gene_positions[!(is.na(gene_positions$old_locus_tag)),]
-  genes <- readLines(inputfile)
-  g <- grep("[A-Za-z]+[0-9]+\\t[A-Za-z]+[0-9]+\\t.*", genes)
-  if(length(g)) {
-    start_gene <- gsub("([A-Za-z]+[0-9]+)\\t[A-Za-z]+[0-9]+\\t.*", "\\1", genes[g])
-    end_gene <- gsub("[A-Za-z]+[0-9]+\\t([A-Za-z]+[0-9]+)\\t.*", "\\1", genes[g])
-    df <- data.frame(start_gene, end_gene)
-    df <- df[order(start_gene),]
-    # PredictBias uses some old_locus_tags that aren't in the genbank file. We have to remove these as
-    # we have no way to know the genomic positions.
-    df <- df[df$start_gene %in% gene_positions$old_locus_tag, ]
-    df <- df[df$end_gene %in% gene_positions$old_locus_tag, ]
-    df$start_position <- 0
-    df$end_position <- 0
-    for(i in 1:nrow(df)) {
-      df[i,"start_position"] <- gene_positions[gene_positions$old_locus_tag == df[i,"start_gene"],]$start
-      df[i,"end_position"] <- gene_positions[gene_positions$old_locus_tag == df[i,"end_gene"],]$end
-    }
-    # Merge overlaps
-    i <- 1
-    while(i < nrow(df)) {
-      if(df[i,"end_position"] >= df[(i+1),"start_position"]) {
-        if(df[(i+1),"end_position"] > df[i,"end_position"]) {
-          df[i,"end_position"] <- df[(i+1),"end_position"]
-        }
-        df <- df[-(i+1), ,drop=FALSE]
-      }else{
-        i <- i + 1
-      }
-    }
-    gis <- paste0("PredictBias_", seq(1, nrow(df)))
-    write.table(cbind(gis, df[,c("start_position","end_position")]), outputfile, row.names=F, col.names=F, sep="\t", quote=F)
-  }else{
-    writeLines("", outputfile)
-  }
-}
-
 #########
 # little function to go from a two column of GI pred (start stop) to a three 
 # column format (name start stop)
