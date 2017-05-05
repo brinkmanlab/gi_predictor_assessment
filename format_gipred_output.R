@@ -37,8 +37,8 @@ parse_ZislandExplorer <- function(inputfile, outputfile) {
   g <- grep("GI", lines)
   if (length(g>=1)) {
     gis <- paste0("ZislandExplorer_", seq(1, length(g)))
-    start <- as.numeric(gsub("GI\\d+\\s+\\t(\\d+)\\.\\.\\d+\\s+\\t.+", "\\1", lines[g]))
-    end <- as.numeric(gsub("GI\\d+\\s+\\t\\d+\\.\\.(\\d+)\\s+\\t.+", "\\1", lines[g]))
+    start <- as.numeric(gsub("GI\\d+\\t(\\d+)\\.\\.\\d+\\t.+", "\\1", lines[g]))
+    end <- as.numeric(gsub("GI\\d+\\t\\d+\\.\\.(\\d+)\\t.+", "\\1", lines[g]))
     write.table(cbind(gis, start, end), outputfile, row.names=F, col.names=F, sep="\t", quote=F)
   } else {
     writeLines("", outputfile)
