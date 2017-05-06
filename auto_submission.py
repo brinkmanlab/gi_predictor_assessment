@@ -7,7 +7,11 @@ Created on Tue May  2 11:31:13 2017
 
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
-import os, time
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+import selenium.common.exceptions as e
+from selenium.webdriver.support import expected_conditions as EC
+import os, time, io
 
 # function to automate submission, download and renaming/moving of results for
 # PredictBias. Will only work on my computer without changes
@@ -38,3 +42,23 @@ def predictbias_submit(genome):
         # takes browser to bioinformatics main page - nothing downloaded.
         print("GENOME "+genome+" FAILED")
     driver.close()
+    
+def paidb_submit(ffnfile, outhtml):
+    driver = webdriver.Chrome() # change for different browsers
+    driver.get("http://www.paidb.re.kr/pai_finder.php?m=f")
+    driver.find_element_by_name("SEQFILE").send_keys(ffnfile)
+    driver.find_element_by_xpath("//input[@value='Analyze']").send_keys(Keys.RETURN)
+    driver.get(driver.current_url)
+    try:
+        WebDriverWait(driver, 120).until(
+            EC.text_to_be_present_in_element((By.XPATH, "//h3[1]"), "Done !")
+        )
+    except e.TimeoutException:
+        print(ffnfile.split("/")[-1]+" Took too long.")
+        driver.close()
+    else:
+        with io.open(outhtml, "w") as o:
+            o.write(driver.page_source)
+        driver.close()
+
+paidb_submit("/home/beef/Documents/BrinkmanLab/GenomicIslands/PAIDB/PAIDB_files/test.ffn", "/home/beef/Documents/BrinkmanLab/GenomicIslands/PAIDB/results/test.html")
