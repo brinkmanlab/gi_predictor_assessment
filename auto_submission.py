@@ -60,5 +60,3 @@ def paidb_submit(ffnfile, outhtml):
         with io.open(outhtml, "w") as o:
             o.write(driver.page_source)
         driver.close()
-
-paidb_submit("/home/beef/Documents/BrinkmanLab/GenomicIslands/PAIDB/PAIDB_files/test.ffn", "/home/beef/Documents/BrinkmanLab/GenomicIslands/PAIDB/results/test.html")
