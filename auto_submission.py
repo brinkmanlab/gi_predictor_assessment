@@ -55,8 +55,7 @@ def paidb_submit(ffnfile, outhtml):
         )
     except e.TimeoutException:
         print(ffnfile.split("/")[-1]+" Took too long.")
-        driver.close()
     else:
         with io.open(outhtml, "w") as o:
             o.write(driver.page_source)
-        driver.close()
+    driver.close()
