@@ -238,11 +238,11 @@ parse_GCProfile <- function(inputfile, outputfile) {
 }
 
 parse_WnSVM <- function(inputfile, outputfile) {
-  results <- read.table(inputfile, sep="\t", skip = 8, comment.char = "")[,c(2,11)]
-  gis <- subset(results, !(results$V11 %in% c("#NGT#","#RIBO#")))
-  if(nrow(gis)) {
-    indices <- gsub("(\\d+)\\.\\.(\\d+)","\\1\t\\2", gis$V2)
-    labels <- paste0("Wn-SVM_", seq(1, nrow(gis)))
+  lines <- readLines(inputfile)
+  g <- grep("#HGT\\d+#", lines)
+  if(length(g)) {
+    indices <- gsub(".+\\t(\\d+)\\.\\.(\\d+)\\t.+","\\1\t\\2", lines[g])
+    labels <- paste0("Wn-SVM_", seq(1, length(g)))
     write.table(cbind(labels, indices), outputfile, row.names=F, col.names=F, sep="\t", quote=F)
   }else{
     writeLines("", outputfile)
