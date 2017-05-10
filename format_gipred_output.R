@@ -249,6 +249,17 @@ parse_WnSVM <- function(inputfile, outputfile) {
   }
 }
 
+parse_GI_SVM <- function(inputfile, outputfile) {
+  lines <- readLines(inputfile)
+  indices <- gsub("(\\d+\\t\\d+)\\t0\\.\\d+", "\\1", lines)
+  if(length(indices)) {
+    labels <- paste0("GI_SVM_",seq(1, length(indices)))
+    write.table(cbind(labels, indices), outputfile, row.names=F, col.names=F, sep="\t", quote=F)
+  }else{
+    writeLines("", outputfile)
+  }
+}
+
 #########
 # little function to go from a two column of GI pred (start stop) to a three 
 # column format (name start stop)
