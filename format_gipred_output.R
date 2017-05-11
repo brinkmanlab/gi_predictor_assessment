@@ -260,6 +260,18 @@ parse_GI_SVM <- function(inputfile, outputfile) {
   }
 }
 
+parse_Sigi_CRF <- function(inputfile, outputfile) {
+  lines <- readLines(inputfile)
+  g <- grep(".+PUTAL\\t(\\d+\\t\\d+)\\t.+", lines)
+  if(length(g)) {
+    indices <- gsub(".+PUTAL\\t(\\d+\\t\\d+)\\t.+", "\\1", lines[g])
+    labels <- paste0("Sigi_CRF_", seq(1, length(g)))
+    write.table(cbind(labels, indices), outputfile, row.names=F, col.names=F, sep="\t", quote=F)
+  }else{
+    writeLines("", outputfile)
+  }
+}
+
 #########
 # little function to go from a two column of GI pred (start stop) to a three 
 # column format (name start stop)
