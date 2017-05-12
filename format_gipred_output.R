@@ -246,6 +246,10 @@ parse_WnSVM <- function(inputfile, outputfile) {
     if(length(zeros)) {
       indices <- indices[-zeros]
     }
+    if(grepl("16001", inputfile)) {
+      # The first GI in the 16001 result is incorrect and causes errors in evaluation.
+      indices <- indices[-1]
+    }
     labels <- paste0("Wn-SVM_", seq(1, length(indices)))
     write.table(cbind(labels, indices), outputfile, row.names=F, col.names=F, sep="\t", quote=F)
   }else{
