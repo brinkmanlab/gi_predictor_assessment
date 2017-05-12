@@ -242,7 +242,11 @@ parse_WnSVM <- function(inputfile, outputfile) {
   g <- grep("#HGT\\d+#", lines)
   if(length(g)) {
     indices <- gsub(".+\\t(\\d+)\\.\\.(\\d+)\\t.+","\\1\t\\2", lines[g])
-    labels <- paste0("Wn-SVM_", seq(1, length(g)))
+    zeros <- grep("\\d+\\t0", indices)
+    if(length(zeros)) {
+      indices <- indices[-zeros]
+    }
+    labels <- paste0("Wn-SVM_", seq(1, length(indices)))
     write.table(cbind(labels, indices), outputfile, row.names=F, col.names=F, sep="\t", quote=F)
   }else{
     writeLines("", outputfile)

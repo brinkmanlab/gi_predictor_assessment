@@ -57,7 +57,11 @@ def parse_PredictBias(genbankfile, PBresultfile, outputfile):
         for gene in gi_genes:
             # some gene results from PB are not present in the submitted genbank file
             if gene[0] in gbk_genes and gene[1] in gbk_genes:
-                gis.append((gbk_genes[gene[0]][0],gbk_genes[gene[1]][1]))        
+                # some gene results are placed backwards by PB
+                if gbk_genes[gene[0]][0] < gbk_genes[gene[1]][0]:
+                    gis.append((gbk_genes[gene[0]][0],gbk_genes[gene[1]][1]))
+                else:
+                    gis.append((gbk_genes[gene[1]][0],gbk_genes[gene[0]][1]))
         # merge overlaps
         i = 0
         while i < len(gis)-1:
