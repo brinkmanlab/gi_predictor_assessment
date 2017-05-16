@@ -38,7 +38,7 @@ evaluate_GRange_onePred <- function(predfolder, ids, posfolder, negfolder) {
  
 # One id, one predictor 
 evaluate_oneGRange_pred <- function(id, predfolder, posfolder, negfolder) {
-  print(paste0("Running analysis for : ", id))
+  # print(paste0("Running ", predfolder, " analysis for : ", id))
   # initialize with no value, so we dont get in trouble if empty
   pred_gis <- data.frame("V1"="GI_0", "V2"=0, "V3"=0)
   posds <- data.frame("V1"="GI_0", "V2"=0, "V3"=0)
@@ -88,7 +88,9 @@ stat_GRanges <- function(predgis, oneposds, onenegds) {
   }
   fscore <- 2*truepos/(2*truepos+falsepos+falseneg)
   mcc <- ((truepos*trueneg)-(falsepos*falseneg))/sqrt((truepos+falsepos)*(truepos+falseneg)*(trueneg+falsepos)*(trueneg+falseneg))
-  
+  if(mcc == "NaN") {
+    mcc <- 0
+  }
   # returning results as a dataframe
   metrics <- c("recall", "precision", "accuracy", "fscore", "mcc")
   value <- c(recall, precision, accuracy, fscore, mcc)
