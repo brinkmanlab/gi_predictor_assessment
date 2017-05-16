@@ -280,6 +280,30 @@ parse_Sigi_CRF <- function(inputfile, outputfile) {
   }
 }
 
+parse_indegenius <- function(inputfile, outputfile) {
+  bins <- read.table(inputfile, sep="\t", col.names=c("bin","region","distance"))
+  # ggplot(bins, aes(x=bin, y=distance)) + geom_line()
+  foreign_bins <- subset(bins, distance > mean(distance) + 2*sd(distance))
+  g <- grep("\\d+-\\d+", foreign_bins$region)
+  if(length(g)) {
+    gis <- cbind(as.numeric(gsub("(\\d+)-(\\d+)", "\\1", foreign_bins[g,"region"])), as.numeric(gsub("(\\d+)-(\\d+)", "\\2", foreign_bins[g,"region"])))
+    i <- 1
+    while(i < (nrow(gis))) {
+      if(gis[i,2] == gis[i+1,1]-1) {
+        # The ith entry in gis is next to the next entry
+        gis[i,2] <- gis[i+1,2]
+        gis <- gis[-(i+1),,drop=FALSE]
+      }else{
+        i <- i+1
+      }
+    }
+    labels <- paste0("INDeGenIUS_", seq(1, nrow(gis)))
+    write.table(cbind(labels, gis), outputfile, row.names=F, col.names=F, sep="\t", quote=F)
+  }else{
+    writeLines("", outputfile)
+  }
+}
+
 #########
 # little function to go from a two column of GI pred (start stop) to a three 
 # column format (name start stop)
