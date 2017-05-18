@@ -2,6 +2,7 @@
 # note that it is possible for a predictor to have zero true positive and zero false positive even if it made predictions, if those predicitions were not overlapping with either positive or negative datasets.
 # in these cases, precision will be 1 and MCC will be 0.
 
+# get_legend function from: http://stackoverflow.com/questions/12539348/ggplot-separate-legend-and-plot
 get_legend<-function(myggplot){
   tmp <- ggplot_gtable(ggplot_build(myggplot))
   leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
