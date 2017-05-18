@@ -26,8 +26,8 @@ Computing and preparing results
 setwd("Results/")
 predictors <- readLines("predictors_mcc_order.txt") # The predictors in descending order of median mcc value
 genomeids <- readLines("../../iv4_aid.txt")
-labels_alpha <- c("AlienHunter", "Centroid", "GC-Profile", "GIHunter", "GI-SVM", "INDeGenIUS", "IslandPath", "Islander", "IslandViewer 4", "MJSD", "MSGIP", "MTGIpick", "PAI-IDA", "PredictBias", "SigHunt", "SIGI-HMM", "SIGI-CRF", "Wn-SVM", "Zisland Explorer")
-labels_mcc <- c("IslandViewer 4", "GIHunter", "IslandPath", "SIGI-CRF", "SIGI-HMM", "MTGIpick", "PredictBias", "AlienHunter", "INDeGenIUS", "GI-SVM", "MJSD", "SigHunt", "Wn-SVM", "Centroid", "PAI-IDA", "Zisland Explorer", "Islander", "GC-Profile", "MSGIP")
+labels_alpha <- c("AlienHunter", "Centroid", "GC-Profile", "GIHunter", "GI-SVM", "INDeGenIUS", "IslandPath-DIMOB v1.0.0", "Islander", "IslandViewer 4", "MJSD", "MSGIP", "MTGIpick", "PAI-IDA", "PredictBias", "SigHunt", "SIGI-HMM", "SIGI-CRF", "Wn-SVM", "Zisland Explorer")
+labels_mcc <- c("IslandViewer 4", "GIHunter", "IslandPath-DIMOB v1.0.0", "SIGI-CRF", "SIGI-HMM", "MTGIpick", "PredictBias", "AlienHunter", "INDeGenIUS", "GI-SVM", "MJSD", "SigHunt", "Wn-SVM", "Centroid", "PAI-IDA", "Zisland Explorer", "Islander", "GC-Profile", "MSGIP")
 result <- as.data.frame(evaluate_GRange_pred(predictors, genomeids, "combinedposds4", "negds"))
 result$predictor <- factor(result$predictor, levels=predictors, ordered=TRUE) # to retain order of predictors
 result$value <- as.numeric(as.character(result$value))
