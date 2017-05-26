@@ -11,10 +11,12 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 import selenium.common.exceptions as e
 from selenium.webdriver.support import expected_conditions as EC
-import os, time, io, subprocess
+import os, io, subprocess
 
-# automated submission, download and renaming/moving of result
+# automated submission, download and renaming of result
 def predictbias_submit(gbk_dir, genome):
+    if gbk_dir[-1] != "/":
+        gbk_dir += "/"
     print("Running genome "+genome)
     driver = webdriver.Chrome() # change for different browsers
     driver.get("http://www.bioinformatics.org/sachbinfo/predictbias.html")
@@ -28,9 +30,11 @@ def predictbias_submit(gbk_dir, genome):
     driver.get(driver.current_url)
     download = driver.find_element_by_link_text("download")
     link = download.get_attribute("href")
-    subprocess.Popen(["wget",link])
-    time.sleep(6) # allow time to download
-    subprocess.Popen(["mv", link.split("/")[-1], genome+".tar.gz"])
+    check = subprocess.call(["wget",link])
+    if check: # non-zero values indicate errors
+        print("Genome "+genome+" failed")
+    else:
+        subprocess.Popen(["mv", link.split("/")[-1], genome+".tar.gz"])
     driver.close()
     
 def paidb_submit(ffnfile, outhtml):
@@ -44,7 +48,7 @@ def paidb_submit(ffnfile, outhtml):
             EC.text_to_be_present_in_element((By.XPATH, "//h3[1]"), "Done !")
         )
     except e.TimeoutException:
-        print(ffnfile.split("/")[-1]+" Took too long.")
+        print(ffnfile.split("/")[-1]+" Timed Out")
     else:
         with io.open(outhtml, "w") as o:
             o.write(driver.page_source)
