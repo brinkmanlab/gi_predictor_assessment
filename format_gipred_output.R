@@ -76,42 +76,33 @@ getSIGIgi <- function(index, rlediff, w, genetab) {
   return(gi)
 }
 
-parse_mjsd <- function(inputfile,outputfile) {
-  lines <- tryCatch(
-    {
-      read.table(inputfile, sep=" ", colClasses = c("character","numeric"))[1:2]
-    },
-    error=function(e) {
-      cat("",file=outputfile,append=TRUE)
-    }
-  )
-  if(!is.null(lines)) {
-    cutoff <- 0.99999
-    # removes all segments that are not considered genomic islands
-    subset(lines, lines$V2 >= cutoff) -> lines
-    if(nrow(lines)){
-      lines$V2 <- NULL
-      lines$istart <- as.numeric(gsub("-[0-9]*:","",lines$V1))
-      lines$iend <- as.numeric(gsub(".*-(.*):", "\\1",lines$V1))
-      lines$V1 <- NULL
-      # the following while loop merges consecutive islands
-      i <- 1
-      while(i < (nrow(lines))) {
-        while(i < nrow(lines) && lines[i,2] == lines[i+1,1]) {
-          lines[i,2] <- lines[i+1,2]
-          lines <- lines[-(i+1),]
-        }
-        i <- i+1
+parse_mjsd <- function(inputfile, outputfile, cutoff=0.99999) {
+  lines <- try(read.table(inputfile, sep=" ", colClasses = c("character","numeric"))[1:2] ,silent=T)
+  # removes all segments that are not considered genomic islands
+  subset(lines, lines$V2 >= cutoff) -> lines
+  if(nrow(lines)){
+    lines$V2 <- NULL
+    lines$istart <- as.numeric(gsub("-[0-9]*:","",lines$V1))
+    lines$iend <- as.numeric(gsub(".*-(.*):", "\\1",lines$V1))
+    lines$V1 <- NULL
+    # the following while loop merges consecutive islands
+    i <- 1
+    while(i < (nrow(lines))) {
+      while(i < nrow(lines) && lines[i,2] == lines[i+1,1]) {
+        lines[i,2] <- lines[i+1,2]
+        lines <- lines[-(i+1),]
       }
-      name <- paste0("MJSD_", seq(1, nrow(lines)))
-      options(scipen=999)
-      write.table(cbind(name,lines), file=outputfile, sep="\t", row.names=F, col.names=F)
+      i <- i+1
     }
+    name <- paste0("MJSD_", seq(1, nrow(lines)))
+    options(scipen=999)
+    write.table(cbind(name,lines), file=outputfile, sep="\t", row.names=F, col.names=F, quote=F)
+  }else{
+    writeLines("", outputfile)
   }
-  cat("",file=outputfile,append=TRUE)
 }
 
-parse_alien_hunter <- function(inputfile,outputfile) {
+parse_alien_hunter <- function(inputfile, outputfile) {
   lines <- readLines(inputfile)
   g <- grep("misc_feature", lines, value=TRUE)
   if (length(g>=1)) {
@@ -150,8 +141,7 @@ parse_centroid <- function(inputfile, outputfile) {
   }
 }
 
-parse_pai_ida <- function(inputfile, outputfile) {
-  cutoff <- 3.9
+parse_pai_ida <- function(inputfile, outputfile, cutoff=3.9) {
   steps <- read.table(inputfile, sep="\t", colClasses = c("V1"="numeric", "V8"="numeric"))[,c(1,8)]
   subset(steps, steps$V8 >= cutoff)[,1] -> steps
   if(length(steps)) {
@@ -174,7 +164,7 @@ parse_pai_ida <- function(inputfile, outputfile) {
 }
 
 parse_SigHunt <- function(inputfile, outputfile, cutoff=5) {
-  DIAS=read.table(inputfile,header=TRUE)
+  DIAS <- read.table(inputfile,header=TRUE)
   DIAS$pass <- (DIAS$Hurricane >= cutoff)
   DIAS$gi <- 0
   # following for loop adapted from code in SigHuntTransform.r (https://www.iba.muni.cz/index-en.php?pg=research--data-analysis-tools--sighunt)
@@ -282,7 +272,6 @@ parse_Sigi_CRF <- function(inputfile, outputfile) {
 
 parse_indegenius <- function(inputfile, outputfile) {
   bins <- read.table(inputfile, sep="\t", col.names=c("bin","region","distance"))
-  # ggplot(bins, aes(x=bin, y=distance)) + geom_line()
   foreign_bins <- subset(bins, distance > mean(distance) + 2*sd(distance))
   g <- grep("\\d+-\\d+", foreign_bins$region)
   if(length(g)) {
