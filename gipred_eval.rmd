@@ -17,35 +17,66 @@ library(grid)
 library(gridExtra)
 source("evaluate_gipred.R")
 source("boxplot.r")
+source("dotplot.r")
+source("pointplot.r")
 ```
 
 Computing and preparing results
 ```{r, echo=FALSE, results='hide', warning=FALSE, error=FALSE}
+dataset_mode <- readline(prompt = "Enter positive dataset (l for literature, c for combined): ")
+labels_mcc <- c("IslandViewer 4", "GIHunter", "IslandPath-DIMOB v1.0.0", "SIGI-CRF", "SIGI-HMM", "MTGIpick", "PredictBias", "AlienHunter", "INDeGenIUS", "GI-SVM", "MJSD", "SigHunt", "Wn-SVM", "Centroid", "PAI-IDA", "Zisland Explorer", "Islander", "GC-Profile", "MSGIP")
+labels_alpha <- c("AlienHunter", "Centroid", "GC-Profile", "GIHunter", "GI-SVM", "INDeGenIUS", "IslandPath-DIMOB v1.0.0", "Islander", "IslandViewer 4", "MJSD", "MSGIP", "MTGIpick", "PAI-IDA", "PredictBias", "SigHunt", "SIGI-HMM", "SIGI-CRF", "Wn-SVM", "Zisland Explorer")
+labels_lit <- c("GIHunter", "IslandViewer 4", "PredictBias", "IslandPath-DIMOB v1.0.0", "MTGIpick", "SIGI-CRF", "AlienHunter", "SIGI-HMM", "MJSD", "Islander", "MSGIP", "SigHunt", "Zisland Explorer", "INDeGenIUS", "GI-SVM", "Wn-SVM", "PAI-IDA", "Centroid", "GC-Profile")
 # The working directory should contain a folder for each predictor plus the positive and negative dataset.
 # Each folder should contain a file for each genome
 setwd("Results/")
-predictors <- readLines("predictors_mcc_order.txt") # The predictors in descending order of median mcc value
-genomeids <- readLines("../../iv4_aid.txt")
-labels_alpha <- c("AlienHunter", "Centroid", "GC-Profile", "GIHunter", "GI-SVM", "INDeGenIUS", "IslandPath-DIMOB v1.0.0", "Islander", "IslandViewer 4", "MJSD", "MSGIP", "MTGIpick", "PAI-IDA", "PredictBias", "SigHunt", "SIGI-HMM", "SIGI-CRF", "Wn-SVM", "Zisland Explorer")
-labels_mcc <- c("IslandViewer 4", "GIHunter", "IslandPath-DIMOB v1.0.0", "SIGI-CRF", "SIGI-HMM", "MTGIpick", "PredictBias", "AlienHunter", "INDeGenIUS", "GI-SVM", "MJSD", "SigHunt", "Wn-SVM", "Centroid", "PAI-IDA", "Zisland Explorer", "Islander", "GC-Profile", "MSGIP")
-result <- as.data.frame(evaluate_GRange_pred(predictors, genomeids, "combinedposds4", "negds"))
+if (dataset_mode == "c" || dataset_mode == "combined") {
+  dataset_mode <- "combined"
+  predictors <- readLines("predictors_mcc_order.txt") # The predictors in descending order of median mcc value
+  genomeids <- readLines("../../iv4_aid.txt")
+  pred_labels <- labels_mcc
+  result <- as.data.frame(evaluate_GRange_pred(predictors, genomeids, "combinedposds4", "negds"))
+}
+if (dataset_mode == "l" || dataset_mode == "literature") {
+  dataset_mode <- "literature"
+  predictors <- readLines("predictors_lit_mcc_order.txt")
+  genomeids <- c(17008, 17009, 19149, 19515, 19778, 20156)
+  pred_labels <- labels_lit
+  result <- as.data.frame(evaluate_GRange_pred(predictors, genomeids, "literature", "negds"))
+}
 result$predictor <- factor(result$predictor, levels=predictors, ordered=TRUE) # to retain order of predictors
 result$value <- as.numeric(as.character(result$value))
 result$metrics <- factor(result$metrics, levels=c("mcc","fscore","accuracy","precision","recall"), labels=c("Matthews Correlation Coefficient","F-score","Accuracy","Precision","Recall"))
-```
-Save pdf of boxplot Results
-```{r}
 # A palette made to be maximally distinct
 pal <- c("#7A72D6", "#CC9AC6", "#5B9E42", "#CC8136", "#579178", "#A37367", "#DC5038", "#DEB899", "#C1E14C", "#CF52B5",
-         "#6987B4", "#BEDAA1", "#D3BC42", "#87CCD7", "#69DB53", "#86853E", "#63DFA5", "#D45479", "#AF50E3")
+           "#6987B4", "#BEDAA1", "#D3BC42", "#87CCD7", "#69DB53", "#86853E", "#63DFA5", "#D45479", "#AF50E3")
+# get_legend function from: http://stackoverflow.com/questions/12539348/ggplot-separate-legend-and-plot
+get_legend<-function(myggplot){
+  tmp <- ggplot_gtable(ggplot_build(myggplot))
+  leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
+  legend <- tmp$grobs[[leg]]
+  return(legend)
+}
+```
 
-boxplot_gipred(result, pal, labels_mcc)
+Save pdf of boxplot Results
+```{r}
+if (dataset_mode == "combined") {
+  boxplot_gipred(result, pal, pred_labels)
+}
+```
+
+Save pdf of dotplot Results
+```{r}
+if (dataset_mode == "literature") {
+  dotplot_gipred(result, pal, pred_labels)
+}
 ```
 
 Means and Medians of each predictor
 ```{r}
-means <- data.frame(factor(labels_mcc))
-meds <- data.frame(factor(labels_mcc))
+means <- data.frame(factor(pred_labels))
+meds <- data.frame(factor(pred_labels))
 meanstat <- result %>% group_by(predictor, metrics) %>% summarize("value"=mean(value, na.rm=T))
 medstat <- result %>% group_by(predictor, metrics) %>% summarize("value"=median(value, na.rm=T))
 for(m in unique(meanstat$metrics)) {
@@ -53,18 +84,6 @@ for(m in unique(meanstat$metrics)) {
   meds[,m] <- filter(medstat, metrics == m)$value
 }
 # Create table files
-write.table(means[order(-means[,"Matthews Correlation Coefficient"]),], "gipred_mean.txt", sep="\t", row.names=F, col.names=c("Predictors","MCC","F-score","Accuracy","Precision","Recall"), quote=F)
-write.table(meds[order(-meds[,"Matthews Correlation Coefficient"]),], "gipred_median.txt", sep="\t", row.names=F, col.names=c("Predictors","MCC","F-score","Accuracy","Precision","Recall"), quote=F)
+write.table(means[order(-means[,"Matthews Correlation Coefficient"]),], paste0("gipred_mean_", dataset_mode, ".txt"), sep="\t", row.names=F, col.names=c("Predictor","MCC","F-score","Accuracy","Precision","Recall"), quote=F)
+write.table(meds[order(-meds[,"Matthews Correlation Coefficient"]),], paste0("gipred_median_", dataset_mode, ".txt"), sep="\t", row.names=F, col.names=c("Predictor","MCC","F-score","Accuracy","Precision","Recall"), quote=F)
 ```
-
-Looking for low scoring genomes
-```{r}
-genomes <- result %>% group_by(aid, metrics) %>% summarize("value"=mean(value, na.rm=T))
-gen_mcc <- subset(genomes, metrics=="Matthews Correlation Coefficient")
-gen_f<- subset(genomes, metrics=="F-score")
-gen_mcc$f <- gen_f$value
-ggplot(genomes, aes(x=reorder(aid,value), y=value, color=metrics)) + geom_point() + theme(axis.text.x = element_text(angle = 90, hjust = 1))
-# ggplot(gen_mcc, aes(x=reorder(aid,value))) + geom_point(aes(y=value), colour="blue") + geom_point(aes(y=f), colour="red") + theme(axis.text.x = element_text(angle = 90, hjust = 1))
-# ggplot( gen_mcc, aes(x=reorder(aid,((value+f)/2)), y=((value+f)/2) ) ) + geom_point() + theme(axis.text.x = element_text(angle = 90, hjust = 1), axis.title.x = element_blank()) + ylab("MCC + F-score / 2")
-```
-
