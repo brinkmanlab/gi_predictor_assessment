@@ -293,6 +293,19 @@ parse_indegenius <- function(inputfile, outputfile) {
   }
 }
 
+
+parseVRprofile <- function(inputfile, outputfile) {
+  tab <- try(read.table(inputfile, header=F, as.is=T, sep="\t"))
+  if (class(tab)!="try-error") {
+    start <- gsub("(\\d+)\\.\\.\\d+", "\\1", tab[,2])
+    stop  <- gsub("\\d+\\.\\.(\\d+)", "\\1", tab[,2])
+    labels <- paste0("VRprofile_", seq(1, length(start)))
+    write.table(cbind(labels, start, stop), outputfile, row.names=F, col.names=F, sep="\t", quote=F)
+  } else {
+    writeLines("", outputfile)
+  }
+}
+
 #########
 # little function to go from a two column of GI pred (start stop) to a three 
 # column format (name start stop)
